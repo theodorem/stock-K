@@ -1,0 +1,35 @@
+name: Fetch OHLCV Daily
+
+on:
+  schedule:
+    # 09:05 UTC = 16:05 giờ Việt Nam — sau khi phiên ATC đóng cửa
+    - cron: '5 9 * * 1-5'
+  workflow_dispatch:  # cho phép chạy thủ công
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-ohlcv:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas requests
+
+      - name: Fetch OHLCV data
+        run: python fetch_ohlcv.py
+
+      - name: Commit results
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "OHLCV update — ${{ github.run_id }}"
+          file_pattern: 'data/ohlcv_prices.csv'
